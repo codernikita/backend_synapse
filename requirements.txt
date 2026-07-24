@@ -1,0 +1,11 @@
+pip install 
+fastapi 
+uvicorn 
+sqlalchemy
+psycopg2-binary
+pydantic 
+python-dotenv 
+numpy 
+pandas 
+openpyxl
+

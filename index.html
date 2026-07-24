@@ -1,0 +1,680 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Synapse Adaptive Assessment Portal</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <style>
+      .option-card:hover {
+        border-color: #3b82f6;
+        background-color: #eff6ff;
+      }
+      .option-card.selected {
+        border-color: #2563eb;
+        background-color: #dbeafe;
+        font-weight: 600;
+      }
+      .q-btn.answered {
+        background-color: #22c55e;
+        color: white;
+      }
+      .q-btn.current {
+        border: 2px solid #2563eb;
+        font-weight: bold;
+      }
+      .q-btn.unanswered {
+        background-color: #e5e7eb;
+        color: #374151;
+      }
+    </style>
+  </head>
+  <body class="bg-slate-50 font-sans text-slate-800 min-h-screen">
+    <!-- TOP HEADER -->
+    <header class="bg-indigo-900 text-white shadow-md sticky top-0 z-50">
+      <div
+        class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center"
+      >
+        <div class="flex items-center space-x-3">
+          <div class="bg-indigo-600 p-2 rounded-lg">
+            <i class="fa-solid fa-[#100778] fa-brain text-2xl text-white"></i>
+          </div>
+          <div>
+            <h1 class="text-xl font-bold tracking-wide">SYNAPSE</h1>
+            <p class="text-xs text-indigo-200">
+              Adaptive Learning & Diagnostic Engine
+            </p>
+          </div>
+        </div>
+        <div id="user-header-info" class="hidden text-right text-sm">
+          <span id="header-username" class="font-semibold block text-indigo-100"
+            >Student</span
+          >
+          <span id="header-class" class="text-xs text-indigo-300"
+            >Class 10</span
+          >
+        </div>
+      </div>
+    </header>
+
+    <!-- MAIN CONTAINER -->
+    <main class="max-w-7xl mx-auto p-4 md:p-6">
+      <!-- ================= STAGE 1: AUTHENTICATION ================= -->
+      <section
+        id="auth-section"
+        class="max-w-md mx-auto my-12 bg-white p-8 rounded-xl shadow-lg border border-slate-100"
+      >
+        <div class="flex border-b mb-6">
+          <button
+            id="tab-login"
+            onclick="switchAuthTab('login')"
+            class="w-1/2 py-2 text-center font-semibold text-indigo-600 border-b-2 border-indigo-600"
+          >
+            Login
+          </button>
+          <button
+            id="tab-register"
+            onclick="switchAuthTab('register')"
+            class="w-1/2 py-2 text-center font-semibold text-slate-400"
+          >
+            Register
+          </button>
+        </div>
+
+        <!-- Login Form -->
+        <form id="login-form" onsubmit="handleLogin(event)" class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium mb-1">Username</label>
+            <input
+              type="text"
+              id="login-username"
+              required
+              class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">Password</label>
+            <input
+              type="password"
+              id="login-password"
+              required
+              class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
+            />
+          </div>
+          <button
+            type="submit"
+            class="w-full bg-indigo-600 text-white py-2.5 rounded-lg font-semibold hover:bg-indigo-700 transition"
+          >
+            Log In to Portal
+          </button>
+        </form>
+
+        <!-- Register Form -->
+        <form
+          id="register-form"
+          onsubmit="handleRegister(event)"
+          class="space-y-4 hidden"
+        >
+          <div>
+            <label class="block text-sm font-medium mb-1"
+              >Choose Username</label
+            >
+            <input
+              type="text"
+              id="reg-username"
+              required
+              class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1"
+              >Choose Password</label
+            >
+            <input
+              type="password"
+              id="reg-password"
+              required
+              class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
+            />
+          </div>
+          <button
+            type="submit"
+            class="w-full bg-emerald-600 text-white py-2.5 rounded-lg font-semibold hover:bg-emerald-700 transition"
+          >
+            Create Account
+          </button>
+        </form>
+        <div
+          id="auth-error"
+          class="mt-4 text-sm text-red-600 text-center hidden"
+        ></div>
+      </section>
+
+      <!-- ================= STAGE 2: PROFILE DETAILS FORM ================= -->
+      <section
+        id="profile-section"
+        class="max-w-xl mx-auto my-8 bg-white p-8 rounded-xl shadow-lg border border-slate-100 hidden"
+      >
+        <h2 class="text-2xl font-bold text-slate-800 mb-2">
+          Complete Student Profile
+        </h2>
+        <p class="text-sm text-slate-500 mb-6">
+          Please provide accurate academic information to calibrate your
+          adaptive learning baseline.
+        </p>
+
+        <form onsubmit="handleProfileSubmit(event)" class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium mb-1">Class Grade</label>
+            <select
+              id="prof-grade"
+              required
+              class="w-full px-4 py-2 border rounded-lg bg-white"
+            >
+              <option value="Class 10">Class 10</option>
+              <option value="Class 9">Class 9</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">Date of Birth</label>
+            <input
+              type="date"
+              id="prof-dob"
+              required
+              class="w-full px-4 py-2 border rounded-lg"
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">School Name</label>
+            <input
+              type="text"
+              id="prof-school"
+              required
+              placeholder="e.g. Delhi Public School"
+              class="w-full px-4 py-2 border rounded-lg"
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1"
+              >Previous Class Percentage (%)</label
+            >
+            <input
+              type="number"
+              step="0.1"
+              min="0"
+              max="100"
+              id="prof-pct"
+              required
+              placeholder="e.g. 88.5"
+              class="w-full px-4 py-2 border rounded-lg"
+            />
+          </div>
+          <button
+            type="submit"
+            class="w-full bg-indigo-600 text-white py-3 rounded-lg font-semibold hover:bg-indigo-700 transition flex justify-center items-center gap-2"
+          >
+            Proceed to Aptitude Test <i class="fa-solid fa-arrow-right"></i>
+          </button>
+        </form>
+      </section>
+
+      <!-- ================= STAGE 3 & 4: TEST PORTAL INTERFACE ================= -->
+      <section id="quiz-section" class="hidden">
+        <div
+          class="bg-indigo-100 border-l-4 border-indigo-600 p-4 rounded-r-lg mb-6 flex justify-between items-center"
+        >
+          <div>
+            <h3 id="quiz-title" class="font-bold text-indigo-900 text-lg">
+              General Cognitive Aptitude Assessment
+            </h3>
+            <p class="text-xs text-indigo-700">
+              Read each question carefully. Select an option and click Next.
+            </p>
+          </div>
+          <div
+            class="text-right bg-white px-4 py-2 rounded-lg shadow-sm border border-indigo-200"
+          >
+            <span class="text-xs text-slate-500 block">Question Progress</span>
+            <span id="quiz-progress-text" class="font-bold text-indigo-900"
+              >1 / 10</span
+            >
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          <!-- Question Stem & Options (3 Cols) -->
+          <div
+            class="lg:col-span-3 bg-white p-6 rounded-xl shadow-md border border-slate-100 flex flex-col justify-between min-h-[420px]"
+          >
+            <div>
+              <div class="flex items-center justify-between mb-4">
+                <span
+                  id="question-tag"
+                  class="bg-slate-100 text-slate-600 text-xs font-semibold px-2.5 py-1 rounded"
+                  >Question 1</span
+                >
+                <span
+                  id="question-topic"
+                  class="text-xs font-medium text-indigo-600 bg-indigo-50 px-2 py-1 rounded"
+                  >Logical Reasoning</span
+                >
+              </div>
+              <h4
+                id="question-text"
+                class="text-lg font-medium text-slate-800 mb-6"
+              >
+                Loading question stem...
+              </h4>
+
+              <!-- Options List -->
+              <div id="options-container" class="space-y-3">
+                <!-- Injected dynamically -->
+              </div>
+            </div>
+
+            <!-- Action Bar -->
+            <div class="pt-6 border-t mt-6 flex justify-between items-center">
+              <button
+                id="prev-btn"
+                onclick="navigateQuestion(-1)"
+                class="px-5 py-2 border rounded-lg hover:bg-slate-50 font-medium text-sm disabled:opacity-50"
+              >
+                Previous
+              </button>
+              <button
+                id="next-btn"
+                onclick="navigateQuestion(1)"
+                class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-semibold text-sm transition"
+              >
+                Save & Next
+              </button>
+            </div>
+          </div>
+
+          <!-- Palette Sidebar (1 Col) -->
+          <div
+            class="bg-white p-6 rounded-xl shadow-md border border-slate-100"
+          >
+            <h4 class="font-bold text-sm text-slate-700 mb-4 border-b pb-2">
+              Question Palette
+            </h4>
+            <div id="question-palette" class="grid grid-cols-5 gap-2 mb-6">
+              <!-- Injected dynamically -->
+            </div>
+            <button
+              onclick="finishCurrentQuiz()"
+              class="w-full bg-emerald-600 text-white py-2.5 rounded-lg font-bold hover:bg-emerald-700 transition text-sm"
+            >
+              Submit Section
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= STAGE 5: MAIN DASHBOARD ================= -->
+      <section id="dashboard-section" class="hidden space-y-6">
+        <!-- Student Header Banner -->
+        <div
+          class="bg-gradient-to-r from-indigo-900 to-indigo-700 text-white p-6 rounded-2xl shadow-lg flex flex-col md:flex-row justify-between items-start md:items-center gap-4"
+        >
+          <div>
+            <h2 class="text-2xl font-bold">
+              Welcome back, <span id="dash-username">Student</span>!
+            </h2>
+            <p id="dash-school-info" class="text-indigo-200 text-sm mt-1">
+              Class 10 | Delhi Public School
+            </p>
+          </div>
+          <div
+            class="bg-white/10 backdrop-blur-md px-6 py-3 rounded-xl border border-white/20"
+          >
+            <span
+              class="text-xs text-indigo-200 block uppercase tracking-wider font-semibold"
+              >Prior Academic Index</span
+            >
+            <span id="dash-percentage" class="text-2xl font-extrabold"
+              >88.5%</span
+            >
+          </div>
+        </div>
+
+        <h3 class="text-xl font-bold text-slate-800 pt-2">
+          Knowledge Graph & Concept Mastery
+        </h3>
+
+        <!-- Chapters Grid -->
+        <div
+          id="chapters-container"
+          class="grid grid-cols-1 md:grid-cols-2 gap-6"
+        >
+          <!-- Injected dynamically -->
+        </div>
+      </section>
+    </main>
+
+    <script>
+      const API_BASE = "http://localhost:8000/api";
+      let currentUser = null;
+      let currentQuizData = [];
+      let currentQuizIndex = 0;
+      let userAnswers = {};
+      let questionStartTime = Date.now();
+      let currentQuizType = ""; // "APTITUDE" or "DIAGNOSTIC" or "CONCEPT"
+
+      // --- AUTH TAB TOGGLE ---
+      function switchAuthTab(tab) {
+        if (tab === "login") {
+          document.getElementById("login-form").classList.remove("hidden");
+          document.getElementById("register-form").classList.add("hidden");
+          document.getElementById("tab-login").className =
+            "w-1/2 py-2 text-center font-semibold text-indigo-600 border-b-2 border-indigo-600";
+          document.getElementById("tab-register").className =
+            "w-1/2 py-2 text-center font-semibold text-slate-400";
+        } else {
+          document.getElementById("login-form").classList.add("hidden");
+          document.getElementById("register-form").classList.remove("hidden");
+          document.getElementById("tab-register").className =
+            "w-1/2 py-2 text-center font-semibold text-emerald-600 border-b-2 border-emerald-600";
+          document.getElementById("tab-login").className =
+            "w-1/2 py-2 text-center font-semibold text-slate-400";
+        }
+      }
+
+      // --- AUTH HANDLERS ---
+      async function handleRegister(e) {
+        e.preventDefault();
+        const username = document.getElementById("reg-username").value;
+        const password = document.getElementById("reg-password").value;
+
+        try {
+          const res = await fetch(`${API_BASE}/auth/register`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username, password }),
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.detail || "Registration failed");
+
+          alert("Account created! Logging you in...");
+          await loginUser(username, password);
+        } catch (err) {
+          showAuthError(err.message);
+        }
+      }
+
+      async function handleLogin(e) {
+        e.preventDefault();
+        const username = document.getElementById("login-username").value;
+        const password = document.getElementById("login-password").value;
+        await loginUser(username, password);
+      }
+
+      async function loginUser(username, password) {
+        try {
+          const res = await fetch(`${API_BASE}/auth/login`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username, password }),
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.detail || "Invalid login");
+
+          currentUser = data;
+          document.getElementById("header-username").innerText = data.username;
+          document
+            .getElementById("user-header-info")
+            .classList.remove("hidden");
+
+          if (!data.has_completed_profile) {
+            showSection("profile-section");
+          } else {
+            loadDashboard();
+          }
+        } catch (err) {
+          showAuthError(err.message);
+        }
+      }
+
+      function showAuthError(msg) {
+        const errDiv = document.getElementById("auth-error");
+        errDiv.innerText = msg;
+        errDiv.classList.remove("hidden");
+      }
+
+      // --- PROFILE SUBMIT ---
+      async function handleProfileSubmit(e) {
+        e.preventDefault();
+        const payload = {
+          user_id: currentUser.user_id,
+          class_grade: document.getElementById("prof-grade").value,
+          date_of_birth: document.getElementById("prof-dob").value,
+          school_name: document.getElementById("prof-school").value,
+          previous_class_percentage: parseFloat(
+            document.getElementById("prof-pct").value,
+          ),
+        };
+
+        const res = await fetch(`${API_BASE}/profile/details`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+
+        if (res.ok) {
+          startAptitudeQuiz();
+        }
+      }
+
+      // --- QUIZ ENGINE ---
+      async function startAptitudeQuiz() {
+        currentQuizType = "APTITUDE";
+        const res = await fetch(`${API_BASE}/quiz/aptitude`);
+        const data = await res.json();
+
+        document.getElementById("quiz-title").innerText =
+          "General Cognitive Aptitude Assessment";
+        setupQuiz(data.questions);
+      }
+
+      async function startDiagnosticQuiz() {
+        currentQuizType = "DIAGNOSTIC";
+        const res = await fetch(`${API_BASE}/quiz/diagnostic`);
+        const data = await res.json();
+
+        document.getElementById("quiz-title").innerText =
+          "Class 10 Science Diagnostic Quiz";
+        setupQuiz(data.questions);
+      }
+
+      function setupQuiz(questions) {
+        currentQuizData = questions;
+        currentQuizIndex = 0;
+        userAnswers = {};
+        showSection("quiz-section");
+        renderQuestion();
+        renderPalette();
+      }
+
+      function renderQuestion() {
+        questionStartTime = Date.now();
+        const q = currentQuizData[currentQuizIndex];
+
+        document.getElementById("quiz-progress-text").innerText =
+          `${currentQuizIndex + 1} / ${currentQuizData.length}`;
+        document.getElementById("question-tag").innerText =
+          `Question ${currentQuizIndex + 1}`;
+        document.getElementById("question-topic").innerText =
+          q.topic || q.chapter || "Science";
+        document.getElementById("question-text").innerText = q.question_text;
+
+        const optionsContainer = document.getElementById("options-container");
+        optionsContainer.innerHTML = "";
+
+        const selectedOpt = userAnswers[q.question_id]?.selected;
+
+        ["A", "B", "C", "D"].forEach((optKey) => {
+          const optText = q.options[optKey];
+          const card = document.createElement("div");
+          card.className = `option-card p-4 rounded-xl border cursor-pointer transition flex items-center gap-4 ${selectedOpt === optKey ? "selected" : "border-slate-200"}`;
+          card.onclick = () => selectOption(q.question_id, optKey);
+          card.innerHTML = `
+                    <div class="w-8 h-8 rounded-full border border-slate-300 flex items-center justify-center font-bold text-sm bg-white">${optKey}</div>
+                    <div class="text-sm text-slate-700">${optText}</div>
+                `;
+          optionsContainer.appendChild(card);
+        });
+
+        document.getElementById("prev-btn").disabled = currentQuizIndex === 0;
+        renderPalette();
+      }
+
+      function selectOption(qId, optionKey) {
+        const timeTaken = Date.now() - questionStartTime;
+        userAnswers[qId] = { selected: optionKey, time_ms: timeTaken };
+        renderQuestion();
+      }
+
+      function navigateQuestion(direction) {
+        currentQuizIndex += direction;
+        if (currentQuizIndex < 0) currentQuizIndex = 0;
+        if (currentQuizIndex >= currentQuizData.length)
+          currentQuizIndex = currentQuizData.length - 1;
+        renderQuestion();
+      }
+
+      function renderPalette() {
+        const palContainer = document.getElementById("question-palette");
+        palContainer.innerHTML = "";
+        currentQuizData.forEach((q, idx) => {
+          const isAnswered = !!userAnswers[q.question_id];
+          const isCurrent = idx === currentQuizIndex;
+          const btn = document.createElement("button");
+          btn.className = `q-btn w-10 h-10 rounded-lg text-xs font-semibold ${isCurrent ? "current" : ""} ${isAnswered ? "answered" : "unanswered"}`;
+          btn.innerText = idx + 1;
+          btn.onclick = () => {
+            currentQuizIndex = idx;
+            renderQuestion();
+          };
+          palContainer.appendChild(btn);
+        });
+      }
+
+      async function finishCurrentQuiz() {
+        // Submit all answered questions before loading dashboard
+        for (const qId of Object.keys(userAnswers)) {
+          await submitQuestionAnswer(parseInt(qId));
+        }
+
+        alert("Quiz completed! Updating your knowledge dashboard...");
+        await loadDashboard(); // Re-fetches mastery from DB
+      }
+
+      // --- DASHBOARD LOADER ---
+      async function loadDashboard() {
+        const res = await fetch(`${API_BASE}/dashboard/${currentUser.user_id}`);
+        const data = await res.json();
+
+        document.getElementById("dash-username").innerText =
+          data.student_info.username;
+        document.getElementById("dash-school-info").innerText =
+          `${data.student_info.class_grade} | ${data.student_info.school_name}`;
+        document.getElementById("dash-percentage").innerText =
+          `${data.student_info.previous_percentage}%`;
+
+        const container = document.getElementById("chapters-container");
+        container.innerHTML = "";
+
+        data.chapters.forEach((ch) => {
+          const card = document.createElement("div");
+          card.className =
+            "bg-white p-6 rounded-2xl shadow-md border border-slate-100";
+
+          let subtopicsHTML = ch.subtopics
+            .map(
+              (sub) => `
+                    <div class="border-t pt-3 mt-3 first:border-0 first:pt-0">
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="font-semibold text-slate-800 text-sm">${sub.concept_name} (${sub.concept_id})</span>
+                            <span class="text-xs font-bold text-indigo-600">${sub.mastery_percentage}% Mastery</span>
+                        </div>
+                        <div class="w-full bg-slate-100 rounded-full h-2 mb-2">
+                            <div class="bg-indigo-600 h-2 rounded-full" style="width: ${Math.min(sub.mastery_percentage, 100)}%"></div>
+                        </div>
+                        <div class="flex justify-between items-center text-xs text-slate-500">
+                            <span>Formula: ${sub.formula} | Unit: ${sub.unit}</span>
+                            <button onclick="startConceptPractice('${sub.concept_id}')" class="text-indigo-600 font-bold hover:underline">Practice <i class="fa-solid fa-play text-[10px]"></i></button>
+                        </div>
+                    </div>
+                `,
+            )
+            .join("");
+
+          card.innerHTML = `
+                    <h4 class="text-lg font-bold text-slate-800 mb-4 pb-2 border-b flex justify-between items-center">
+                        <span>${ch.chapter_name}</span>
+                        <span class="text-xs font-normal text-slate-500">${ch.total_concepts} Concepts</span>
+                    </h4>
+                    <div class="space-y-3">${subtopicsHTML}</div>
+                `;
+          container.appendChild(card);
+        });
+
+        showSection("dashboard-section");
+      }
+
+      async function startConceptPractice(conceptId) {
+        const res = await fetch(
+          `${API_BASE}/quiz/generate/${conceptId}/${currentUser.user_id}`,
+        );
+        const data = await res.json();
+        currentQuizType = "CONCEPT";
+        document.getElementById("quiz-title").innerText =
+          `Adaptive Practice: Concept ${conceptId}`;
+        setupQuiz([data.question]);
+      }
+
+      async function submitQuestionAnswer(qId) {
+        const userAns = userAnswers[qId];
+        if (!userAns || userAns.submitted) return;
+
+        try {
+          const res = await fetch(`${API_BASE}/quiz/submit`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              user_id: currentUser.user_id,
+              session_id: currentSessionId, // Set when starting quiz
+              question_id: qId,
+              selected_option: userAns.selected,
+              response_time_ms: userAns.time_ms || 2000,
+            }),
+          });
+
+          if (res.ok) {
+            userAnswers[qId].submitted = true;
+          }
+        } catch (err) {
+          console.error("Submission failed:", err);
+        }
+      }
+      // --- HELPER FUNCTION ---
+      function showSection(id) {
+        [
+          "auth-section",
+          "profile-section",
+          "quiz-section",
+          "dashboard-section",
+        ].forEach((sec) => {
+          document.getElementById(sec).classList.add("hidden");
+        });
+        document.getElementById(id).classList.remove("hidden");
+      }
+    </script>
+  </body>
+</html>
